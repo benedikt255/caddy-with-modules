@@ -15,9 +15,10 @@ jobs:
       - name: Get latest Caddy version
         id: get_version
         run: |
-          latest=$(curl -s https://api.github.com/repos/caddyserver/caddy/releases/latest | jq -r .tag_name)
-          echo "Latest version: $latest"
-          echo "latest_version=$latest" >> $GITHUB_OUTPUT
+          raw=$(curl -s https://api.github.com/repos/caddyserver/caddy/releases/latest | jq -r .tag_name)
+          version=${raw#v}  # Remove leading 'v'
+          echo "Latest version: $version"
+          echo "latest_version=$version" >> $GITHUB_OUTPUT
 
       - name: Check if image already exists
         id: check_image
