@@ -41,6 +41,7 @@ jobs:
       
       - name: Build and push multi-arch image
         run: |
+          version=${{ steps.get_version.outputs.latest_version }}
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             --build-arg CADDY_VERSION=$version \
