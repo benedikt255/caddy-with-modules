@@ -1,0 +1,39 @@
+name: Build and Push Caddy Image
+
+on:
+  schedule:
+    - cron: '5 1 * * *'  # Runs every hour
+  workflow_dispatch:     # Allows manual trigger
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Get latest Caddy version
+        id: get_version
+        run: |
+          latest=$(curl -s https://api.github.com/repos/caddyserver/caddy/releases/latest | jq -r .tag_name)
+          echo "Latest version: $latest"
+          echo "latest_version=$latest" >> $GITHUB_OUTPUT
+
+      - name: Check if image already exists
+        id: check_image
+        run: |
+          version=${{ steps.get_version.outputs.latest_version }}
+          exists=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            https://ghcr.io/v2/${{ github.repository }}/tags/list | jq -r ".tags[]" | grep -Fx "$version" || true)
+          echo "Image exists: $exists"
+          echo "image_exists=$exists" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        if: steps.check_image.outputs.image_exists == ''
+        run: |
+          version=${{ steps.get_version.outputs.latest_version }}
+          echo "Building image for Caddy $version"
+
+          docker build --build-arg CADDY_VERSION=$version -t ghcr.io/${{ github.repository }}:$version .
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker push ghcr.io/${{ github.repository }}:$version
