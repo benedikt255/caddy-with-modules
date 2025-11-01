@@ -41,9 +41,8 @@ jobs:
       
       - name: Build and push multi-arch image
         run: |
-          docker buildx create --use
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
-            --build-arg CADDY_VERSION=${RELEASE_VERSION} \
-            --tag ghcr.io/${{ github.repository }}:${RELEASE_VERSION} \
+            --build-arg CADDY_VERSION=$version \
+            --tag ghcr.io/${{ github.repository }}:$version \
             --push .
