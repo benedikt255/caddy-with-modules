@@ -24,10 +24,8 @@ jobs:
         id: check_image
         run: |
           version=${{ steps.get_version.outputs.latest_version }}
-          exists=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            https://ghcr.io/v2/${{ github.repository }}/tags/list | jq -r ".tags[]" | grep -Fx "$version" || true)
-          echo "version list $(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            https://ghcr.io/v2/${{ github.repository }}/tags/list) "
+          exists=$(curl -s https://ghcr.io/v2/${{ github.repository }}/tags/list | jq -r ".tags[]" | grep -Fx "$version" || true)
+          echo "version list https://ghcr.io/v2/${{ github.repository }}/tags/list) "
           echo "Image exists: $exists"
           echo "image_exists=$exists" >> $GITHUB_OUTPUT
 
